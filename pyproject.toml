@@ -34,6 +34,7 @@ bandit = "^1.7.2"
 mdformat = "^0.7.14"
 rstcheck = "^3.3.1"
 nbqa = "^1.3.1"
+docformatter = "^1.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -110,26 +111,33 @@ type = "virtualenv"
            ./tests/temp
   """
 
+  [tool.poe.tasks.format-doc]
+  help = "Format docstrings"
+  shell  = "docformatter attribution --pre-summary-newline"
+  interpreter = "powershell"
+
   [tool.poe.tasks.format]
   help = "Run black and isort on the code base"
   shell  = """
     black .
     isort attribution --profile black
+    docformatter attribution --pre-summary-newline
   """
   interpreter = "powershell"
 
-  [tool.poe.tasks.format_nb]
+  [tool.poe.tasks.fnb]
   help = "Run formatters on notebooks"
   shell  = """
-    nbqa black $notebooks
-    nbqa isort $notebooks --profile black
-    nbqa pylint $notebooks
-    nbqa mypy $notebooks
-    nbqa pydocstyle $notebooks
-    nbqa doctest $notebooks
+    nbqa black $Env:nb
+    nbqa isort $Env:nb --profile black
+    nbqa mdformat $Env:nb --nbqa-md
   """
-  args = [{ name = "notebooks", default = "*.ipynb" }]
-  interpreter = "powershell"
+    [[tool.poe.tasks.fnb.args]]
+    name = "nb"
+    help = "Name of the notebooks"
+    default = "**/*.ipynb"
+    options = ["-nb", "--notebook"]
+  # interpreter = "powershell"
 
   [tool.poe.tasks.safety]
   help = "Run safety checks"
